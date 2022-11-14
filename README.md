@@ -1,2 +1,2 @@
 # kvDb
-go key-value db
+go Simple and lightweight key-value db
