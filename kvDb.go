@@ -32,12 +32,14 @@ func (r *KvDb) log(a ...any) {
 
 // &util.Range{Start: []byte("foo"), Limit: []byte("xoo")}
 // util.BytesPrefix([]byte("foo-"))
-func (r *KvDb) Iterator(fnCbk func(iterator.Iterator), slice *util.Range) {
+func (r *KvDb) Iterator(fnCbk func(iterator.Iterator) bool, slice *util.Range) {
 	iter := r.db.NewIterator(slice, nil)
 	defer iter.Release()
 	if nil != fnCbk {
 		for iter.Next() {
-			fnCbk(iter)
+			if !fnCbk(iter) {
+				break
+			}
 		}
 	}
 }
