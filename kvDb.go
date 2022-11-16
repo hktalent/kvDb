@@ -68,7 +68,7 @@ func (r *KvDb) Put(a ...any) bool {
 	if bRst {
 		for i := 0; i < len(a); i += 2 {
 			k, err := json.Marshal(a[i])
-			v, err1 := json.Marshal(a[i])
+			v, err1 := json.Marshal(a[i+1])
 			if nil == err && nil == err1 {
 				r.db.Put(k, v, nil)
 			} else {
