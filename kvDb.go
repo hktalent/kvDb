@@ -6,6 +6,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
+	"log"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -27,7 +28,7 @@ func NewKvDb(dbPath string, opt *opt.Options) *KvDb {
 }
 
 func (r *KvDb) log(a ...any) {
-
+	log.Println(a...)
 }
 
 // &util.Range{Start: []byte("foo"), Limit: []byte("xoo")}
@@ -70,7 +71,9 @@ func (r *KvDb) Put(a ...any) bool {
 			k, err := json.Marshal(a[i])
 			v, err1 := json.Marshal(a[i+1])
 			if nil == err && nil == err1 {
-				r.db.Put(k, v, nil)
+				if err := r.db.Put(k, v, nil); nil != err {
+					r.log(err)
+				}
 			} else {
 				bRst = false
 			}
