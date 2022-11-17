@@ -73,9 +73,12 @@ func (r *KvDb) Put(a ...any) bool {
 			if nil == err && nil == err1 {
 				if err := r.db.Put(k, v, nil); nil != err {
 					r.log(err)
+					bRst = bRst && false
+				} else {
+					bRst = bRst && true
 				}
 			} else {
-				bRst = false
+				bRst = bRst && false
 			}
 		}
 	}
