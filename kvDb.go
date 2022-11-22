@@ -3,7 +3,6 @@ package kvDb
 import (
 	"github.com/json-iterator/go"
 	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
 	"log"
@@ -33,7 +32,7 @@ func (r *KvDb) log(a ...any) {
 
 // &util.Range{Start: []byte("foo"), Limit: []byte("xoo")}
 // util.BytesPrefix([]byte("foo-"))
-func (r *KvDb) Iterator(fnCbk func(iterator.Iterator) bool, slice *util.Range) {
+func (r *KvDb) Iterator(fnCbk func(a ...any) bool, slice *util.Range) {
 	iter := r.db.NewIterator(slice, nil)
 	defer iter.Release()
 	if nil != fnCbk {
@@ -48,15 +47,17 @@ func (r *KvDb) Iterator(fnCbk func(iterator.Iterator) bool, slice *util.Range) {
 // delete more key
 func (r *KvDb) Delete(a ...any) bool {
 	bRst := true
+	batch := new(leveldb.Batch)
 	for _, x := range a {
 		if k, err := json.Marshal(x); nil == err {
-			r.db.Delete(k, nil)
+			batch.Delete(k)
 			bRst = bRst && true
 		} else {
 			bRst = bRst && false
 			r.log("Delete error ", err)
 		}
 	}
+	r.db.Write(batch, nil)
 	return bRst
 }
 
@@ -67,20 +68,17 @@ func (r *KvDb) Delete(a ...any) bool {
 func (r *KvDb) Put(a ...any) bool {
 	bRst := 0 == len(a)%2
 	if bRst {
+		batch := new(leveldb.Batch)
 		for i := 0; i < len(a); i += 2 {
 			k, err := json.Marshal(a[i])
 			v, err1 := json.Marshal(a[i+1])
 			if nil == err && nil == err1 {
-				if err := r.db.Put(k, v, nil); nil != err {
-					r.log(err)
-					bRst = bRst && false
-				} else {
-					bRst = bRst && true
-				}
+				batch.Put(k, v)
 			} else {
 				bRst = bRst && false
 			}
 		}
+		r.db.Write(batch, nil)
 	}
 	return bRst
 }
